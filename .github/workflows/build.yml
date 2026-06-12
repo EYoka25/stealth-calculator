@@ -20,22 +20,13 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Check Folder Contents
-      run: |
-        echo "=== Root Contents ==="
-        ls -la
-        echo "=== app-repo Contents ==="
-        ls -la app-repo || echo "app-repo folder not found"
+    - name: Install Gradle Engine on Cloud
+      uses: gradle/actions/setup-gradle@v4
 
-    - name: Run Build
+    - name: Run Build Without Wrapper
       run: |
         cd app-repo
-        if [ ! -f gradlew ]; then
-          echo "gradlew wrapper missing, attempting to build anyway..."
-        else
-          chmod +x gradlew
-        fi
-        ./gradlew assembleDebug --stacktrace
+        gradle assembleDebug --stacktrace
         
     - name: Upload Finished APK
       if: success()
