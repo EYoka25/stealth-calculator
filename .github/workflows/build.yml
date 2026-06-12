@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -18,17 +20,25 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Fix and Run Gradle Build
+    - name: Check Folder Contents
+      run: |
+        echo "=== Root Contents ==="
+        ls -la
+        echo "=== app-repo Contents ==="
+        ls -la app-repo || echo "app-repo folder not found"
+
+    - name: Run Build
       run: |
         cd app-repo
-        # Check if gradlew exists, if not, generate a fresh one
         if [ ! -f gradlew ]; then
-          gradle wrapper
+          echo "gradlew wrapper missing, attempting to build anyway..."
+        else
+          chmod +x gradlew
         fi
-        chmod +x gradlew
-        ./gradlew assembleDebug
+        ./gradlew assembleDebug --stacktrace
         
     - name: Upload Finished APK
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: StealthCalculator-Test-Build
