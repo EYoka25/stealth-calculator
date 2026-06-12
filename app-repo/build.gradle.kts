@@ -1,27 +1,38 @@
-// ============================================================================
-// ADD THESE TO YOUR EXISTING app/build.gradle.kts FILE
-// ============================================================================
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("kotlin-kapt")
+}
 
-// 1. In the plugins block (top of file), ADD:
-// alias(libs.plugins.kapt)
+android {
+    namespace = "com.example.stealthcalculator"
+    compileSdk = 34
 
-// 2. In the android block, ensure viewBinding is enabled (should already be there):
-// buildFeatures {
-//     viewBinding = true
-//     buildConfig = true
-// }
+    defaultConfig {
+        applicationId = "com.example.stealthcalculator"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+    }
 
-// 3. ADD these to the dependencies block:
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
 dependencies {
-    // Existing dependencies remain unchanged...
-    // ADD the following new dependencies:
-
     // Room Database
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
 
-    // Ktor Client (WebSocket + HTTP)
+    // Ktor Client
     implementation("io.ktor:ktor-client-core:2.3.12")
     implementation("io.ktor:ktor-client-cio:2.3.12")
     implementation("io.ktor:ktor-client-websockets:2.3.12")
@@ -31,14 +42,7 @@ dependencies {
     // Kotlinx Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
-    // RecyclerView (should already be present via dependencies, but ensure it's there)
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
-
-    // Lifecycle Process (for ON_STOP/ON_PAUSE detection)
+    // Lifecycle
     implementation("androidx.lifecycle:lifecycle-process:2.8.3")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
 }
-
-// ============================================================================
-// ALSO ADD to the top of the file (if not present):
-// import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
-// ============================================================================
