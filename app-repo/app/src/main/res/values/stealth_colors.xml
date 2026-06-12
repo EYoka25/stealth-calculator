@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="chat_background">#EFE6DD</color>
+    <color name="bubble_sent">#DCF8C6</color>
+    <color name="bubble_received">#FFFFFF</color>
+    <color name="message_sent_text">#111B21</color>
+    <color name="message_received_text">#111B21</color>
+    <color name="message_meta_text">#687782</color>
+    <color name="sender_name_color">#53BDEB</color>
+    <color name="status_background">#80000000</color>
+    <color name="status_connecting">#FFB800</color>
+    <color name="status_connected">#00C853</color>
+    <color name="tick_grey">#687782</color>
+    <color name="tick_blue">#53BDEB</color>
+    <color name="white">#FFFFFF</color>
+</resources>

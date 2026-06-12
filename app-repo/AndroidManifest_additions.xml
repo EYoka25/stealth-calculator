@@ -1,0 +1,19 @@
+<!--
+    ADD THESE ELEMENTS TO YOUR EXISTING AndroidManifest.xml
+    Inside the <application> tag, alongside your existing activities.
+-->
+
+    <!-- Stealth Hidden Chat Activity -->
+    <activity
+        android:name=".stealth.ui.HiddenChatActivity"
+        android:exported="false"
+        android:excludeFromRecents="true"
+        android:launchMode="singleTask"
+        android:windowSoftInputMode="adjustResize" />
+
+<!--
+    ALSO ADD these permissions inside the <manifest> tag (before <application>):
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+-->
