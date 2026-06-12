@@ -18,13 +18,16 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Grant Execute Permission for Gradle
-      run: chmod +x app-repo/gradlew
-
-    - name: Build Development APK
-      run: ./gradlew assembleDebug
-      working-directory: ./app-repo
-
+    - name: Fix and Run Gradle Build
+      run: |
+        cd app-repo
+        # Check if gradlew exists, if not, generate a fresh one
+        if [ ! -f gradlew ]; then
+          gradle wrapper
+        fi
+        chmod +x gradlew
+        ./gradlew assembleDebug
+        
     - name: Upload Finished APK
       uses: actions/upload-artifact@v4
       with:
