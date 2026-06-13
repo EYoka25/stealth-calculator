@@ -28,7 +28,7 @@ object DatabaseFactory {
             else -> "org.sqlite.JDBC"
         }
 
-        val dataSource = HikariDataSource(HikariConfig().apply {
+        val hikariConfig = HikariConfig().apply {
             driverClassName = driverClass
             jdbcUrl = databaseUrl
             if (databaseUser.isNotEmpty()) username = databaseUser
@@ -38,8 +38,8 @@ object DatabaseFactory {
             if (driverClass == "org.postgresql.Driver") {
                 transactionIsolation = "TRANSACTION_REPEATABLE_READ"
             }
-            validate()
-        })
+        }
+        val dataSource = HikariDataSource(hikariConfig)
 
         Database.connect(dataSource)
 

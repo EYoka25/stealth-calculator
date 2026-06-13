@@ -6,7 +6,7 @@ import java.util.Base64
 import java.util.Date
 
 object JwtService {
-    private const val SECRET = "opencalc-stealth-secret-key-change-in-production"
+    private val SECRET = System.getenv("JWT_SECRET") ?: "opencalc-stealth-secret-key-change-in-production"
     private const val EXPIRATION_MS = 86400000 // 24 hours
 
     private fun hmacSha256(data: String): String {

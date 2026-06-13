@@ -61,31 +61,46 @@ fun Application.configureRouting() {
 
             // Media upload
             post("/media/upload") {
-                val multipart = call.receiveMultipart()
-                var fileName = ""
-                var contentType = "application/octet-stream"
-                var fileBytes: ByteArray? = null
-
-                multipart.forEachPart { part ->
-                    when (part) {
-                        is PartData.FileItem -> {
-                            fileName = part.originalFileName ?: "unknown"
-                            contentType = part.contentType?.toString() ?: contentType
-                            fileBytes = part.streamProvider().readBytes()
-                        }
-                        else -> {}
-                    }
-                    part.dispose()
+                val authHeader = call.request.headers["Authorization"]
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    return@post call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Missing or invalid token"))
+                }
+                val token = authHeader.removePrefix("Bearer ")
+                if (com.opencalc.backend.service.JwtService.verifyToken(token) == null) {
+                    return@post call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Invalid token"))
                 }
 
-                if (fileBytes != null) {
-                    val url = storageService.uploadFile(fileName, contentType, fileBytes!!)
-                    call.respond(
-                        HttpStatusCode.OK,
-                        MediaUploadResponse(url = url, objectName = fileName)
-                    )
-                } else {
-                    call.respond(HttpStatusCode.BadRequest, ErrorResponse("No file provided")) // Fixed mapOf -> ErrorResponse
+                try {
+                    val multipart = call.receiveMultipart()
+                    var fileName = ""
+                    var contentType = "application/octet-stream"
+                    var fileBytes: ByteArray? = null
+
+                    multipart.forEachPart { part ->
+                        when (part) {
+                            is PartData.FileItem -> {
+                                fileName = part.originalFileName ?: "unknown"
+                                contentType = part.contentType?.toString() ?: contentType
+                                fileBytes = part.streamProvider().readBytes()
+                            }
+                            else -> {}
+                        }
+                        part.dispose()
+                    }
+
+                    if (fileBytes != null) {
+                        val url = storageService.uploadFile(fileName, contentType, fileBytes!!)
+                        call.respond(
+                            HttpStatusCode.OK,
+                            MediaUploadResponse(url = url, objectName = fileName)
+                        )
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, ErrorResponse("No file provided"))
+                    }
+                } catch (e: IllegalStateException) {
+                    call.respond(HttpStatusCode.ServiceUnavailable, ErrorResponse(e.message ?: "Storage service unavailable"))
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, ErrorResponse("Upload failed: ${e.message}"))
                 }
             }
 
