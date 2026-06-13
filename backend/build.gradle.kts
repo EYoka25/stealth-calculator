@@ -33,10 +33,10 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:0.52.0")
     implementation("org.jetbrains.exposed:exposed-java-time:0.52.0")
     implementation("org.postgresql:postgresql:42.7.3")
+    implementation("org.xerial:sqlite-jdbc:3.46.0.0")
     implementation("com.zaxxer:HikariCP:5.1.0")
 
-    // Redis
-    implementation("io.lettuce:lettuce-core:6.3.2.RELEASE")
+
 
     // MinIO S3
     implementation("io.minio:minio:8.5.11")

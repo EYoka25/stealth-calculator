@@ -12,39 +12,47 @@ import java.util.concurrent.TimeUnit
 
 class StorageService {
 
-    private val minioClient: MinioClient by lazy {
-        val endpoint = System.getenv("MINIO_URL") ?: "http://localhost:9000"
-        val accessKey = System.getenv("MINIO_ROOT_USER") ?: "opencalc"
-        val secretKey = System.getenv("MINIO_ROOT_PASSWORD") ?: "opencalc_secret"
+    private val minioClient: MinioClient? by lazy {
+        try {
+            val endpoint = System.getenv("MINIO_URL") ?: return@lazy null
+            val accessKey = System.getenv("MINIO_ROOT_USER") ?: "opencalc"
+            val secretKey = System.getenv("MINIO_ROOT_PASSWORD") ?: "opencalc_secret"
 
-        MinioClient.builder()
-            .endpoint(endpoint)
-            .credentials(accessKey, secretKey)
-            .build()
+            MinioClient.builder()
+                .endpoint(endpoint)
+                .credentials(accessKey, secretKey)
+                .build()
+        } catch (e: Exception) {
+            println("MinIO client initialization failed: ${e.message}")
+            null
+        }
     }
 
     private val bucketName = "chat-media"
 
     init {
         // Ensure bucket exists
-        try {
-            val exists = minioClient.bucketExists(
-                BucketExistsArgs.builder().bucket(bucketName).build()
-            )
-            if (!exists) {
-                minioClient.makeBucket(
-                    MakeBucketArgs.builder().bucket(bucketName).build()
+        minioClient?.let { client ->
+            try {
+                val exists = client.bucketExists(
+                    BucketExistsArgs.builder().bucket(bucketName).build()
                 )
+                if (!exists) {
+                    client.makeBucket(
+                        MakeBucketArgs.builder().bucket(bucketName).build()
+                    )
+                }
+            } catch (e: Exception) {
+                println("MinIO initialization warning: ${e.message}")
             }
-        } catch (e: Exception) {
-            println("MinIO initialization warning: ${e.message}")
         }
     }
 
     fun uploadFile(fileName: String, contentType: String, data: ByteArray): String {
+        val client = minioClient ?: throw IllegalStateException("Storage service (MinIO) is not configured")
         val objectName = "${UUID.randomUUID()}_$fileName"
 
-        minioClient.putObject(
+        client.putObject(
             PutObjectArgs.builder()
                 .bucket(bucketName)
                 .`object`(objectName)
@@ -54,7 +62,7 @@ class StorageService {
         )
 
         // Generate presigned URL (valid for 7 days)
-        return minioClient.getPresignedObjectUrl(
+        return client.getPresignedObjectUrl(
             io.minio.GetPresignedObjectUrlArgs.builder()
                 .method(Method.GET)
                 .bucket(bucketName)
@@ -65,7 +73,7 @@ class StorageService {
     }
 
     fun deleteFile(objectName: String) {
-        minioClient.removeObject(
+        minioClient?.removeObject(
             RemoveObjectArgs.builder()
                 .bucket(bucketName)
                 .`object`(objectName)

@@ -12,24 +12,32 @@ object DatabaseFactory {
     fun init(config: ApplicationConfig) {
         val databaseUrl = config.propertyOrNull("database.url")?.getString()
             ?: System.getenv("DATABASE_URL")
-            ?: "jdbc:postgresql://localhost:5432/opencalc_chat"
+            ?: "jdbc:sqlite:./opencalc.db"
 
         val databaseUser = config.propertyOrNull("database.user")?.getString()
             ?: System.getenv("DATABASE_USER")
-            ?: "opencalc"
+            ?: ""
 
         val databasePassword = config.propertyOrNull("database.password")?.getString()
             ?: System.getenv("DATABASE_PASSWORD")
-            ?: "opencalc_secret"
+            ?: ""
+
+        val driverClass = when {
+            databaseUrl.startsWith("jdbc:postgresql") -> "org.postgresql.Driver"
+            databaseUrl.startsWith("jdbc:sqlite") -> "org.sqlite.JDBC"
+            else -> "org.sqlite.JDBC"
+        }
 
         val dataSource = HikariDataSource(HikariConfig().apply {
-            driverClassName = "org.postgresql.Driver"
+            driverClassName = driverClass
             jdbcUrl = databaseUrl
-            username = databaseUser
-            password = databasePassword
+            if (databaseUser.isNotEmpty()) username = databaseUser
+            if (databasePassword.isNotEmpty()) password = databasePassword
             maximumPoolSize = 10
             isAutoCommit = false
-            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+            if (driverClass == "org.postgresql.Driver") {
+                transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+            }
             validate()
         })
 
